@@ -113,19 +113,26 @@
 (defvar dz-service-hash (make-hash-table)
   "A hash table of all services and their ports")
 
+(defun dz-process-name (name)
+  "The process name for a given dz service."
+  (concat "dz: " name))
+(defun dz-buffer-name (name)
+  "The buffer name for a given dz service."
+  (concat "*" (dz-process-name name) "*"))
+
 ;;;###autoload
 (defun dz-comint-pop (name command &optional args dont-pop)
   "Make a comint buffer for process `name', executing `command' with
 `args' and then pop to that buffer."
   (ansi-color-for-comint-mode-on)
-  (apply 'make-comint name command nil args)
+  (apply 'make-comint (dz-process-name name) command nil args)
   (if (not dont-pop)
-      (dz-pop (concat "*" name "*"))))
+      (dz-pop (dz-buffer-name name))))
 
 ;;;###autoload
 (defun dz-subp-stop (name)
   "Check to see if the process `name' is running stop it if so."
-  (let ((proc (get-buffer-process (concat "*" name "*"))))
+  (let ((proc (get-buffer-process (dz-buffer-name name))))
     (if proc (kill-process proc))))
 
 ;;
@@ -188,7 +195,7 @@ name-running-p
           (run-with-timer 1 nil ',(intern start) ))
         (defun ,(intern (concat service-name "-running-p")) ()
           "Determine whether we're running or not"
-          (dz-xp (get-buffer-process ,(concat "*" service-name "*"))))))))
+          (dz-xp (get-buffer-process ,(dz-buffer-name service-name))))))))
 
 (defmacro dz-defservice-group (service services)
   "Create a named group of services called SERVICE that serve as a conceptual grouping
