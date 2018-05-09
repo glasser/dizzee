@@ -169,7 +169,11 @@ name-running-p
           (message "starting...")
           ,(let ((run `(dz-comint-pop ,service-name ,command (list ,@args))))
              (if cd
-                 `(let ((default-directory ,cd)) ,run)
+                 `(let ((default-directory ,cd)
+                        (old-direnv-dir direnv--active-directory))
+                    (direnv-update-directory-environment ,cd)
+                    ,run
+                    (direnv-update-directory-environment old-direnv-dir))
                run)))
         (defun ,(intern stop) ()
           "Stop the service"
